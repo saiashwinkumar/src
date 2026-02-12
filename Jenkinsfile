@@ -58,20 +58,40 @@ pipeline {
         }
         
         stage('Start Connexion Flask application') {
-            steps {
-                sh '''
-                . ${VENV_DIR}/bin/activate
-                pkill -f mymathserver.py || true
+          steps {
+            sh '''
+              set -e
+              . venv/bin/activate
+        
+              # Kill old server if any
+              pkill -f mymathserver.py || true
+              sleep 1
+        
+              # IMPORTANT: ensure port 5000 is free (otherwise you hit a different service -> 403)
+              if lsof -ti tcp:5000 >/dev/null 2>&1; then
+                echo "Port 5000 is in use. Killing the process using it..."
+                lsof -ti tcp:5000 | xargs kill -9 || true
                 sleep 1
-                export JENKINS_NODE_COOKIE=dontkillme
-                nohup python3 mymathserver.py > mymathserver.log 2>&1 &
-                echo $! > mymathserver.pid
-                sleep 3
-                curl -s http://localhost:5000 || echo "Application may not be running"
-                ps -p $(cat mymathserver.pid) || echo "Process not running"
-                '''
-            }
+              fi
+        
+              export JENKINS_NODE_COOKIE=dontkillme
+        
+              # Start server in background + save PID correctly
+              nohup python3 mymathserver.py > server.log 2>&1 &
+              echo $! > mymathserver.pid
+        
+              # Give it time to boot
+              sleep 3
+        
+              # Check server health (print headers to see actual response)
+              curl -i http://127.0.0.1:5000/ || true
+        
+              # Fail fast if server died
+              ps -p $(cat mymathserver.pid) || (echo "Process not running"; echo "=== server.log ==="; cat server.log; exit 1)
+            '''
+          }
         }
+
 
         stage('Run unit tests for API reliability') {
             steps {
@@ -84,6 +104,7 @@ pipeline {
     }
 
 }
+
 
 
 
