@@ -67,30 +67,30 @@ pipeline {
               pkill -f mymathserver.py || true
               sleep 1
         
-              # IMPORTANT: ensure port 5000 is free (otherwise you hit a different service -> 403)
+              # Free up port 5000 (otherwise tests hit another app -> 403)
               if lsof -ti tcp:5000 >/dev/null 2>&1; then
-                echo "Port 5000 is in use. Killing the process using it..."
+                echo "Port 5000 is in use. Killing process..."
                 lsof -ti tcp:5000 | xargs kill -9 || true
                 sleep 1
               fi
         
               export JENKINS_NODE_COOKIE=dontkillme
         
-              # Start server in background + save PID correctly
+              # Start server in background and capture PID
               nohup python3 mymathserver.py > server.log 2>&1 &
               echo $! > mymathserver.pid
         
-              # Give it time to boot
               sleep 3
         
-              # Check server health (print headers to see actual response)
+              # Show what is responding (headers matter for debugging 403)
               curl -i http://127.0.0.1:5000/ || true
         
-              # Fail fast if server died
-              ps -p $(cat mymathserver.pid) || (echo "Process not running"; echo "=== server.log ==="; cat server.log; exit 1)
+              # Fail fast if server died, and print logs
+              ps -p $(cat mymathserver.pid) || (echo "Process not running"; echo "=== server.log ==="; tail -200 server.log; exit 1)
             '''
           }
         }
+
 
 
         stage('Run unit tests for API reliability') {
@@ -104,6 +104,7 @@ pipeline {
     }
 
 }
+
 
 
 
