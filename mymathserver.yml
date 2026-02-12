@@ -1,0 +1,40 @@
+swagger: "2.0"
+
+info:
+  version: "1.0.0"
+  description: "My Math Server API"
+  title: "My Math Server API"
+
+consumes:
+  - "application/json"
+
+produces:
+  - "application/json"
+
+basePath: "/api"
+
+paths:
+  /mymathserver/{operation}:
+    get:
+      operationId: mymathserverapi.invoke
+      parameters:
+        - name: operation
+          in: path
+          required: true
+          type: string
+        - name: arg1
+          in: query
+          required: false
+          type: number
+        - name: arg2
+          in: query
+          required: false
+          type: number
+      responses:
+        200:
+          description: "Successful invocation"
+          schema:
+            type: object
+            properties:
+              result:
+                type: number
