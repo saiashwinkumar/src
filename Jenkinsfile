@@ -36,7 +36,7 @@ pipeline {
             steps {
                 sh '''
                 . ${VENV_DIR}/bin/activate
-                python3 -m pytest -q mymathlibtest.py --html=pytest-mymathlibtest.html --self-contained-html
+                python3 -m pytest -q --html=pytest-mymathlibtest.html --self-contained-html
                 '''
             }
         }
@@ -85,4 +85,5 @@ pipeline {
     }
 
 }
+
 
