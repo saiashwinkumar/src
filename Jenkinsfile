@@ -52,7 +52,7 @@ pipeline {
                 '''
                 sh '''
                 . ${VENV_DIR}/bin/activate
-                python3 ${VENV_DIR}/lib/python3.12/site-packages/pylint_report/pylint_report.py lint-report.json -o lint-report.html
+                python3 -m pylint_report.pylint_report lint-report.json -o lint-report.html
                 '''
             }
         }
@@ -84,6 +84,7 @@ pipeline {
     }
 
 }
+
 
 
 
