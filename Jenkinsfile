@@ -63,18 +63,20 @@ pipeline {
               set -e
               . venv/bin/activate
         
+              # Use a non-conflicting port (macOS AirTunes often occupies 5000)
+              export PORT=5001
+              export JENKINS_NODE_COOKIE=dontkillme
+        
               # Kill old server if any
               pkill -f mymathserver.py || true
               sleep 1
         
-              # Free up port 5000 (otherwise tests hit another app -> 403)
-              if lsof -ti tcp:5000 >/dev/null 2>&1; then
-                echo "Port 5000 is in use. Killing process..."
-                lsof -ti tcp:5000 | xargs kill -9 || true
+              # Free up port 5001 if anything is using it
+              if lsof -ti tcp:$PORT >/dev/null 2>&1; then
+                echo "Port $PORT is in use. Killing process..."
+                lsof -ti tcp:$PORT | xargs kill -9 || true
                 sleep 1
               fi
-        
-              export JENKINS_NODE_COOKIE=dontkillme
         
               # Start server in background and capture PID
               nohup python3 mymathserver.py > server.log 2>&1 &
@@ -82,14 +84,15 @@ pipeline {
         
               sleep 3
         
-              # Show what is responding (headers matter for debugging 403)
-              curl -i http://127.0.0.1:5000/ || true
+              # Show what is responding (headers matter for debugging)
+              curl -i http://127.0.0.1:$PORT/ || true
         
               # Fail fast if server died, and print logs
               ps -p $(cat mymathserver.pid) || (echo "Process not running"; echo "=== server.log ==="; tail -200 server.log; exit 1)
             '''
           }
         }
+
 
 
 
@@ -104,6 +107,7 @@ pipeline {
     }
 
 }
+
 
 
 
