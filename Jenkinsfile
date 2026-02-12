@@ -33,15 +33,14 @@ pipeline {
         }
         
         stage('Run unit tests') {
-            steps {
-                sh '''
-                . ${VENV_DIR}/bin/activate
-                python3 -m pytest -q --html=pytest-mymathlibtest.html --self-contained-html
-                '''
-            }
+          steps {
+            sh '''
+              . ${VENV_DIR}/bin/activate
+              python3 -m pytest -q --html=pytest-mymathlibtest.html --self-contained-html
+            '''
+          }
         }
 
-        
         stage('Generate lint report') {
             when {
                 expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
@@ -85,5 +84,6 @@ pipeline {
     }
 
 }
+
 
 
