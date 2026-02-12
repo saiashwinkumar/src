@@ -35,8 +35,8 @@ pipeline {
         stage('Run unit tests') {
           steps {
             sh '''
-              . ${VENV_DIR}/bin/activate
-              python3 -m pytest -q src/mymathlibtest.py --html=pytest-mymathlibtest.html --self-contained-html
+              . venv/bin/activate
+              python3 -m pytest -q mymathlibtest.py --html=pytest-mymathlibtest.html --self-contained-html
             '''
           }
         }
@@ -84,6 +84,7 @@ pipeline {
     }
 
 }
+
 
 
 
